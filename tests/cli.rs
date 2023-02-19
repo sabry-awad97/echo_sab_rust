@@ -1,39 +1,16 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use predicates::prelude::*;
 
 const PROGRAM_NAME: &'static str = "echo_sab";
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
-/// Helper function to test the `echo` command with various options.
 fn test_echo_with_options(input: &str, expected_output: &str, options: &[&str]) -> TestResult {
-    /* Arrange */
-    let predicate_fn = predicate::eq(format!("{}", expected_output));
-
-    /* Act */
-
-    // Create a new `Command` instance for the `echo` program.
     let mut cmd = Command::cargo_bin(PROGRAM_NAME)?;
-
-    // Add the options to the command.
-    for option in options {
-        cmd.arg(option);
-    }
-
-    // Invoke the `echo` program with the input argument.
-    let output = cmd.arg(input).output()?;
-
-    // Convert the output byte string to a UTF-8 string.
+    let output = cmd.args(options).arg(input).output()?;
     let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-
-    /* Assert */
-
-    // Assert that the output string matches the expected string.
-    assert_eq!(true, predicate_fn.eval(&stdout));
-
-    // Return `Ok(())` to indicate that the test case passed.
+    assert_eq!(expected_output, stdout);
     Ok(())
 }
 
@@ -43,73 +20,51 @@ fn test_text_option() -> TestResult {
 }
 
 #[test]
-fn test_no_newline() -> Result<(), Box<dyn std::error::Error>> {
-    let expected_output = "Hello, world!";
-    let mut cmd = Command::cargo_bin(PROGRAM_NAME)?;
-    let assert = cmd.arg("-n").arg("Hello, world!").assert();
-    assert
-        .success()
-        .stdout(predicate::eq(expected_output))
-        .stdout(predicate::str::ends_with("\n").not());
-    Ok(())
+fn test_no_newline_option() -> Result<(), Box<dyn std::error::Error>> {
+    test_echo_with_options("Hello, world!", "Hello, world!", &["-n"])
 }
 
 #[test]
-fn test_enable_escapes() {
-    let expected_output = "Hello\tWorld\n";
-    let mut cmd = Command::cargo_bin(PROGRAM_NAME).unwrap();
-    let assert = cmd.arg("-e").arg("Hello\\tWorld").assert();
-    assert.success().stdout(expected_output);
+fn test_enable_escapes_option() -> TestResult {
+    test_echo_with_options("Hello\\tWorld", "Hello\tWorld\n", &["-e"])
 }
 
 #[test]
-fn test_no_newline_and_enable_escapes() {
-    let mut cmd = Command::cargo_bin(PROGRAM_NAME).unwrap();
-    let assert = cmd
-        .arg("--no-newline")
-        .arg("-e")
-        .arg("Hello\\tWorld\\n")
-        .assert();
-
-    assert
-        .success()
-        .stdout(predicate::str::contains("\t"))
-        .stdout(predicate::str::ends_with("\n"));
+fn test_disable_escapes_option() -> TestResult {
+    test_echo_with_options(r#"hello\nworld\t!"#, "hellonworldt!\n", &["-E"])
 }
 
 #[test]
-fn test_disable_escapes() {
-    let output = r#"hello\nworld\t!"#;
-    let expected = predicate::eq("hellonworldt!");
-
-    let mut cmd = Command::cargo_bin(PROGRAM_NAME).unwrap();
-    cmd.arg("-n")
-        .arg("-E")
-        .arg(output)
-        .assert()
-        .success()
-        .stdout(expected);
+fn test_no_whitespace_option() -> TestResult {
+    test_echo_with_options("Hello World", "HelloWorld\n", &["-s"])
 }
 
 #[test]
-fn test_no_whitespace() {
-    let output = "Hello World";
-    let expected = predicate::eq("HelloWorld\n");
-
-    let mut cmd = Command::cargo_bin(PROGRAM_NAME).unwrap();
-    cmd.arg("-s")
-        .arg(output)
-        .assert()
-        .success()
-        .stdout(expected);
+fn test_quote_output_option() -> TestResult {
+    test_echo_with_options("Hello World", "'Hello World'\n", &["-p"])
 }
 
 #[test]
-fn test_quote_output() {
-    let mut cmd = Command::cargo_bin(PROGRAM_NAME).unwrap();
-    cmd.arg("-p")
-        .arg("Hello World")
-        .assert()
-        .success()
-        .stdout("'Hello World'\n");
+fn test_no_newline_and_enable_escapes_options() -> TestResult {
+    test_echo_with_options("Hello\\nWorld", "Hello\nWorld", &["-n", "-e"])
+}
+
+#[test]
+fn test_disable_escapes_and_quote_output_options() -> TestResult {
+    test_echo_with_options("Hello\\nWorld", "'HellonWorld'\n", &["-E", "-p"])
+}
+
+#[test]
+fn test_no_whitespace_and_quote_output_options() -> TestResult {
+    test_echo_with_options("Hello World", "'Hello World'\n", &["-E", "-p"])
+}
+
+#[test]
+fn test_no_newline_and_no_whitespace_options() -> TestResult {
+    test_echo_with_options("Hello World", "HelloWorld", &["-n", "-s"])
+}
+
+#[test]
+fn test_enable_escapes_and_quote_output_options() -> TestResult {
+    test_echo_with_options("Hello\\nWorld", "'Hello\nWorld'\n", &["-e", "-p"])
 }
