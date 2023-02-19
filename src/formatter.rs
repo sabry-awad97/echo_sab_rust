@@ -27,25 +27,17 @@ impl<'a> Formatter<'a> {
         let single_quote = EscapeSequence::SingleQuote.to_string();
         let double_quote = EscapeSequence::DoubleQuote.to_string();
 
-        match self.escape_style {
-            EscapeStyle::None => (),
-            EscapeStyle::Basic => {
-                result = result.replace("\\n", &EscapeSequence::Newline.to_string());
-                result = result.replace("\\t", &EscapeSequence::Tab.to_string());
-            }
-            EscapeStyle::Extended => {
-                result = result.replace("\\\\", &EscapeSequence::Backslash.to_string());
-                result = result.replace("\\n", &EscapeSequence::Newline.to_string());
-                result = result.replace("\\t", &EscapeSequence::Tab.to_string());
-                result = result.replace("\\'", &single_quote);
-                result = result.replace("\\\"", &double_quote);
-            }
+        if let EscapeStyle::Basic = self.escape_style {
+            result = replace_basic_escapes(result);
+        } else if let EscapeStyle::Extended = self.escape_style {
+            result = replace_extended_escapes(result);
         }
 
         if self.no_whitespace {
-            result = result.replace(" ", "");
+            result = remove_whitespace(result);
         }
 
+        
         let quote_char = match self.quote_style {
             QuoteStyle::None => "",
             QuoteStyle::Single => &single_quote,
@@ -54,4 +46,24 @@ impl<'a> Formatter<'a> {
 
         format!("{}{}{}", quote_char, result, quote_char)
     }
+}
+
+fn replace_basic_escapes(mut output: String) -> String {
+    output = output.replace("\\n", &EscapeSequence::Newline.to_string());
+    output = output.replace("\\t", &EscapeSequence::Tab.to_string());
+    output
+}
+
+fn replace_extended_escapes(mut output: String) -> String {
+    output = output.replace("\\\\", &EscapeSequence::Backslash.to_string());
+    output = output.replace("\\n", &EscapeSequence::Newline.to_string());
+    output = output.replace("\\t", &EscapeSequence::Tab.to_string());
+    output = output.replace("\\'", &EscapeSequence::SingleQuote.to_string());
+    output = output.replace("\\\"", &EscapeSequence::DoubleQuote.to_string());
+    output
+}
+
+fn remove_whitespace(mut output: String) -> String {
+    output = output.replace(" ", "");
+    output
 }
