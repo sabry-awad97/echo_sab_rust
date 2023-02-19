@@ -34,5 +34,22 @@ fn test_enable_escapes() {
     let expected_output = "Hello\tWorld\n";
     let mut cmd = Command::cargo_bin(PROGRAM_NAME).unwrap();
     let assert = cmd.arg("-e").arg("Hello\\tWorld").assert();
-    assert.success().stdout(expected_output);
+    assert
+        .success()
+        .stdout(expected_output);
+}
+
+#[test]
+fn test_no_newline_and_enable_escapes() {
+    let mut cmd = Command::cargo_bin(PROGRAM_NAME).unwrap();
+    let assert = cmd
+        .arg("--no-newline")
+        .arg("-e")
+        .arg("Hello\\tWorld\\n")
+        .assert();
+
+    assert
+        .success()
+        .stdout(predicate::str::contains("\t"))
+        .stdout(predicate::str::ends_with("\n"));
 }
