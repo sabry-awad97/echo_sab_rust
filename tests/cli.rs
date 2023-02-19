@@ -28,3 +28,11 @@ fn test_echo_without_newline() -> Result<(), Box<dyn std::error::Error>> {
         .stdout(predicate::str::ends_with("\n").not());
     Ok(())
 }
+
+#[test]
+fn test_enable_escapes() {
+    let expected_output = "Hello\tWorld\n";
+    let mut cmd = Command::cargo_bin(PROGRAM_NAME).unwrap();
+    let assert = cmd.arg("-e").arg("Hello\\tWorld").assert();
+    assert.success().stdout(expected_output);
+}

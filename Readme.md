@@ -46,6 +46,12 @@ Here are some of the most commonly used `echo` options:
 
   Notice how the `\n` is interpreted as a literal string when the `-e` option is not used.
 
+  Backslash escapes are special sequences of characters that begin with a backslash and represent a special character or code. The echo command supports the following escape sequences:
+
+  - `\n`: Newline
+  - `\t`: Tab
+  - `\\`: Backslash
+
 - `-E`: This option disables the interpretation of backslash escapes. This is useful if you want to print a string that contains a literal backslash followed by a character that is not a valid escape sequence. For example:
 
   ```sh
