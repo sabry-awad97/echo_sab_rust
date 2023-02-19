@@ -3,24 +3,26 @@ use std::process::Command;
 use assert_cmd::prelude::*;
 use predicates::prelude::*;
 
-const PROGRAM_NAME: &str = "echo_sab";
+const PROGRAM_NAME: &'static str = "echo_sab";
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
+struct TestArgs {
+    args: Vec<&'static str>,
+    expected_output: Vec<Box<dyn Predicate<String>>>,
+}
+
 /// Helper function to test the `echo` command with various options.
-fn test_echo_with_options(input: &str, expected_output: &str, options: &[&str]) -> TestResult {
+fn run_test(args: &TestArgs) -> TestResult {
     /* Arrange */
-    let predicate_fn = predicate::eq(format!("{}", expected_output));
+
+    // Join the input arguments into a single string.
+    let input = args.args.join(" ");
 
     /* Act */
 
     // Create a new `Command` instance for the `echo` program.
     let mut cmd = Command::cargo_bin(PROGRAM_NAME)?;
-
-    // Add the options to the command.
-    for option in options {
-        cmd.arg(option);
-    }
 
     // Invoke the `echo` program with the input argument.
     let output = cmd.arg(input).output()?;
@@ -30,8 +32,14 @@ fn test_echo_with_options(input: &str, expected_output: &str, options: &[&str]) 
 
     /* Assert */
 
-    // Assert that the output string matches the expected string.
-    assert_eq!(true, predicate_fn.eval(&stdout));
+    // Evaluate each expected output predicate and aggregate the results.
+    let mut result = true;
+    for predicate in args.expected_output.iter() {
+        result &= predicate.eval(&stdout);
+    }
+
+    // Assert that all of the predicates evaluated to `true`.
+    assert_eq!(true, result);
 
     // Return `Ok(())` to indicate that the test case passed.
     Ok(())
@@ -39,7 +47,12 @@ fn test_echo_with_options(input: &str, expected_output: &str, options: &[&str]) 
 
 #[test]
 fn test_text_option() -> TestResult {
-    test_echo_with_options("Hello, world!", "Hello, world!\n", &[])
+    let args = TestArgs {
+        args: vec!["Hello, world!"],
+        expected_output: vec![Box::new(predicate::eq(format!("Hello, world!\n")))],
+    };
+
+    run_test(&args)
 }
 
 #[test]
