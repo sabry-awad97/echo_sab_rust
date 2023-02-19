@@ -1,3 +1,4 @@
+use std::fmt;
 use std::io::{self, Write};
 use std::str::FromStr;
 use structopt::StructOpt;
@@ -60,6 +61,28 @@ impl FromStr for QuoteStyle {
     }
 }
 
+#[derive(Debug)]
+enum EscapeSequence {
+    Tab,
+    Newline,
+    Backslash,
+    SingleQuote,
+    DoubleQuote,
+}
+
+impl fmt::Display for EscapeSequence {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let printable = match self {
+            EscapeSequence::Backslash => "\\",
+            EscapeSequence::Newline => "\n",
+            EscapeSequence::Tab => "\t",
+            EscapeSequence::SingleQuote => "'",
+            EscapeSequence::DoubleQuote => "\"",
+        };
+        write!(f, "{}", printable)
+    }
+}
+
 struct Formatter<'a> {
     output: &'a str,
     escape_style: EscapeStyle,
@@ -84,19 +107,21 @@ impl<'a> Formatter<'a> {
 
     fn format_output(&self) -> String {
         let mut result = self.output.to_string();
+        let single_quote = EscapeSequence::SingleQuote.to_string();
+        let double_quote = EscapeSequence::DoubleQuote.to_string();
 
         match self.escape_style {
             EscapeStyle::None => (),
             EscapeStyle::Basic => {
-                result = result.replace("\\n", "\n");
-                result = result.replace("\\t", "\t");
+                result = result.replace("\\n", &EscapeSequence::Newline.to_string());
+                result = result.replace("\\t", &EscapeSequence::Tab.to_string());
             }
             EscapeStyle::Extended => {
-                result = result.replace("\\\\", "\\");
-                result = result.replace("\\'", "'");
-                result = result.replace("\\\"", "\"");
-                result = result.replace("\\n", "\n");
-                result = result.replace("\\t", "\t");
+                result = result.replace("\\\\", &EscapeSequence::Backslash.to_string());
+                result = result.replace("\\n", &EscapeSequence::Newline.to_string());
+                result = result.replace("\\t", &EscapeSequence::Tab.to_string());
+                result = result.replace("\\'", &single_quote);
+                result = result.replace("\\\"", &double_quote);
             }
         }
 
@@ -106,8 +131,8 @@ impl<'a> Formatter<'a> {
 
         let quote_char = match self.quote_style {
             QuoteStyle::None => "",
-            QuoteStyle::Single => "'",
-            QuoteStyle::Double => "\"",
+            QuoteStyle::Single => &single_quote,
+            QuoteStyle::Double => &double_quote,
         };
 
         format!("{}{}{}", quote_char, result, quote_char)
