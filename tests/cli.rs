@@ -25,46 +25,21 @@ fn test_no_newline_option() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
-fn test_enable_escapes_option() -> TestResult {
-    test_echo_with_options("Hello\\tWorld", "Hello\tWorld\n", &["-e"])
-}
-
-#[test]
-fn test_disable_escapes_option() -> TestResult {
-    test_echo_with_options(r#"hello\nworld\t!"#, "hellonworldt!\n", &["-E"])
-}
-
-#[test]
 fn test_no_whitespace_option() -> TestResult {
     test_echo_with_options("Hello World", "HelloWorld\n", &["-s"])
 }
 
 #[test]
 fn test_quote_output_option() -> TestResult {
-    test_echo_with_options("Hello World", "'Hello World'\n", &["-p"])
+    test_echo_with_options("Hello World", "'Hello World'\n", &["-q", "single"])
 }
 
 #[test]
-fn test_no_newline_and_enable_escapes_options() -> TestResult {
-    test_echo_with_options("Hello\\nWorld", "Hello\nWorld", &["-n", "-e"])
+fn test_quote_style() -> TestResult {
+    test_echo_with_options(r#"hello "world""#, "'hello \"world\"'\n", &["-q", "single"])
 }
 
 #[test]
-fn test_disable_escapes_and_quote_output_options() -> TestResult {
-    test_echo_with_options("Hello\\nWorld", "'HellonWorld'\n", &["-E", "-p"])
-}
-
-#[test]
-fn test_no_whitespace_and_quote_output_options() -> TestResult {
-    test_echo_with_options("Hello World", "'Hello World'\n", &["-E", "-p"])
-}
-
-#[test]
-fn test_no_newline_and_no_whitespace_options() -> TestResult {
-    test_echo_with_options("Hello World", "HelloWorld", &["-n", "-s"])
-}
-
-#[test]
-fn test_enable_escapes_and_quote_output_options() -> TestResult {
-    test_echo_with_options("Hello\\nWorld", "'Hello\nWorld'\n", &["-e", "-p"])
+fn test_escape_style() -> TestResult {
+    test_echo_with_options(r"hello\nworld", "hello\nworld\n", &["-e", "basic"])
 }
