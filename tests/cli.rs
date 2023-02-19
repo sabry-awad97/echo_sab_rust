@@ -5,17 +5,41 @@ use predicates::prelude::*;
 
 const PROGRAM_NAME: &str = "echo_sab";
 
-#[test]
-fn test_no_options() -> Result<(), Box<dyn std::error::Error>> {
-    let output = "Hello, world!";
-    let expected_output = predicate::eq(format!("{}\n", output));
+type TestResult = Result<(), Box<dyn std::error::Error>>;
+
+/// Helper function to test the `echo` command with various options.
+fn test_echo_with_options(input: &str, expected_output: &str, options: &[&str]) -> TestResult {
+    /* Arrange */
+    let predicate_fn = predicate::eq(format!("{}", expected_output));
+
+    /* Act */
+
+    // Create a new `Command` instance for the `echo` program.
     let mut cmd = Command::cargo_bin(PROGRAM_NAME)?;
-    let assert = cmd.arg(output).assert();
-    assert
-        .success()
-        .stdout(expected_output)
-        .stdout(predicate::str::ends_with("\n"));
+
+    // Add the options to the command.
+    for option in options {
+        cmd.arg(option);
+    }
+
+    // Invoke the `echo` program with the input argument.
+    let output = cmd.arg(input).output()?;
+
+    // Convert the output byte string to a UTF-8 string.
+    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+
+    /* Assert */
+
+    // Assert that the output string matches the expected string.
+    assert_eq!(true, predicate_fn.eval(&stdout));
+
+    // Return `Ok(())` to indicate that the test case passed.
     Ok(())
+}
+
+#[test]
+fn test_text_option() -> TestResult {
+    test_echo_with_options("Hello, world!", "Hello, world!\n", &[])
 }
 
 #[test]
