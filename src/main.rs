@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::io::{self, Write};
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
@@ -10,24 +10,38 @@ struct Options {
     #[structopt(short = "e", long, help = "Enable interpretation of backslash escapes")]
     enable_escapes: bool,
 
+    #[structopt(
+        short = "E",
+        long,
+        help = "Disable interpretation of backslash escapes"
+    )]
+    disable_escapes: bool,
+
     #[structopt(help = "The text to print")]
     text: String,
 }
 
-fn main() {
+fn main() -> io::Result<()> {
     let options = Options::from_args();
-    let mut output = if options.no_newline {
-        format!("{}", options.text)
-    } else {
-        format!("{}\n", options.text)
-    };
+
+    let mut stdout = io::stdout();
+    let mut output = options.text;
 
     if options.enable_escapes {
         output = output.replace("\\n", "\n");
         output = output.replace("\\t", "\t");
+        // Add more escape sequences here if needed
     }
 
-    std::io::stdout()
-        .write_all(output.as_bytes())
-        .expect("Failed to write to stdout");
+    if options.disable_escapes {
+        output = output.replace("\\", "");
+    }
+
+    write!(stdout, "{}", output)?;
+
+    if !options.no_newline {
+        writeln!(stdout)?;
+    }
+
+    Ok(())
 }

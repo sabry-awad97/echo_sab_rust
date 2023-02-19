@@ -6,7 +6,7 @@ use predicates::prelude::*;
 const PROGRAM_NAME: &str = "echo_sab";
 
 #[test]
-fn test_echo_with_newline() -> Result<(), Box<dyn std::error::Error>> {
+fn test_no_options() -> Result<(), Box<dyn std::error::Error>> {
     let expected_output = "Hello, world!\n";
     let mut cmd = Command::cargo_bin(PROGRAM_NAME)?;
     let assert = cmd.arg("Hello, world!").assert();
@@ -34,9 +34,7 @@ fn test_enable_escapes() {
     let expected_output = "Hello\tWorld\n";
     let mut cmd = Command::cargo_bin(PROGRAM_NAME).unwrap();
     let assert = cmd.arg("-e").arg("Hello\\tWorld").assert();
-    assert
-        .success()
-        .stdout(expected_output);
+    assert.success().stdout(expected_output);
 }
 
 #[test]
@@ -52,4 +50,18 @@ fn test_no_newline_and_enable_escapes() {
         .success()
         .stdout(predicate::str::contains("\t"))
         .stdout(predicate::str::ends_with("\n"));
+}
+
+#[test]
+fn test_disable_escapes() {
+    let output = r#"hello\nworld\t!"#;
+    let expected = predicate::eq("hellonworldt!");
+
+    let mut cmd = Command::cargo_bin(PROGRAM_NAME).unwrap();
+    cmd.arg("-n")
+        .arg("-E")
+        .arg(output)
+        .assert()
+        .success()
+        .stdout(expected);
 }
