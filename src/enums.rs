@@ -1,6 +1,6 @@
 use std::{fmt, str::FromStr};
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum EscapeStyle {
     None,
     Basic,
@@ -26,7 +26,7 @@ impl Default for EscapeStyle {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum QuoteStyle {
     None,
     Single,

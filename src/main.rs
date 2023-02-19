@@ -2,25 +2,26 @@ use std::{
     io::{self, Write},
     process,
 };
-use structopt::StructOpt;
+
+use options::OutputOptions;
 
 mod enums;
 mod formatter;
 mod options;
 
-fn run(options: options::Options) -> io::Result<()> {
+fn run(options: &OutputOptions) -> io::Result<()> {
     let stdout = io::stdout();
     let mut handle = stdout.lock();
     let formatter = formatter::Formatter::new(
-        &options.text,
-        options.escape_style.unwrap_or_default(),
-        options.no_whitespace,
-        options.quote_style.unwrap_or_default(),
+        options.output(),
+        options.escape_style(),
+        options.no_whitespace(),
+        options.quote_style(),
     );
     let output = formatter.format_output();
 
     handle.write_all(output.as_bytes())?;
-    if !options.no_newline {
+    if !options.no_newline() {
         handle.write_all(b"\n")?;
     }
 
@@ -28,7 +29,7 @@ fn run(options: options::Options) -> io::Result<()> {
 }
 
 fn main() {
-    if let Err(err) = run(options::Options::from_args()) {
+    if let Err(err) = run(&OutputOptions::new()) {
         eprintln!("Error: {}", err);
         process::exit(1);
     }
