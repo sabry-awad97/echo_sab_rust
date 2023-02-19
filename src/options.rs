@@ -1,6 +1,6 @@
 use structopt::StructOpt;
 
-use crate::formatter::{EscapeStyle, QuoteStyle};
+use crate::enums::{EscapeStyle, QuoteStyle};
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "echo", about = "Print text to the console")]
