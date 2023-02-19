@@ -7,18 +7,19 @@ const PROGRAM_NAME: &str = "echo_sab";
 
 #[test]
 fn test_no_options() -> Result<(), Box<dyn std::error::Error>> {
-    let expected_output = "Hello, world!\n";
+    let output = "Hello, world!";
+    let expected_output = predicate::eq(format!("{}\n", output));
     let mut cmd = Command::cargo_bin(PROGRAM_NAME)?;
-    let assert = cmd.arg("Hello, world!").assert();
+    let assert = cmd.arg(output).assert();
     assert
         .success()
-        .stdout(predicate::eq(expected_output))
+        .stdout(expected_output)
         .stdout(predicate::str::ends_with("\n"));
     Ok(())
 }
 
 #[test]
-fn test_echo_without_newline() -> Result<(), Box<dyn std::error::Error>> {
+fn test_no_newline() -> Result<(), Box<dyn std::error::Error>> {
     let expected_output = "Hello, world!";
     let mut cmd = Command::cargo_bin(PROGRAM_NAME)?;
     let assert = cmd.arg("-n").arg("Hello, world!").assert();
@@ -60,6 +61,19 @@ fn test_disable_escapes() {
     let mut cmd = Command::cargo_bin(PROGRAM_NAME).unwrap();
     cmd.arg("-n")
         .arg("-E")
+        .arg(output)
+        .assert()
+        .success()
+        .stdout(expected);
+}
+
+#[test]
+fn test_no_whitespace() {
+    let output = "Hello World";
+    let expected = predicate::eq("HelloWorld\n");
+
+    let mut cmd = Command::cargo_bin(PROGRAM_NAME).unwrap();
+    cmd.arg("-s")
         .arg(output)
         .assert()
         .success()
