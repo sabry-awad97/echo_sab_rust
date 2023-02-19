@@ -20,6 +20,12 @@ struct Options {
     #[structopt(short = "s", long, help = "Print a string without any whitespace")]
     no_whitespace: bool,
 
+    #[structopt(
+        short = "p",
+        help = "Automatically quote the output using single quotes"
+    )]
+    quote_output: bool,
+
     #[structopt(help = "The text to print")]
     text: String,
 }
@@ -42,6 +48,10 @@ fn main() -> io::Result<()> {
 
     if options.no_whitespace {
         output = output.replace(" ", "");
+    }
+
+    if options.quote_output {
+        output = format!("'{}'", output);
     }
 
     write!(stdout, "{}", output)?;

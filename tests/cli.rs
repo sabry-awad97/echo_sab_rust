@@ -79,3 +79,13 @@ fn test_no_whitespace() {
         .success()
         .stdout(expected);
 }
+
+#[test]
+fn test_quote_output() {
+    let mut cmd = Command::cargo_bin(PROGRAM_NAME).unwrap();
+    cmd.arg("-p")
+        .arg("Hello World")
+        .assert()
+        .success()
+        .stdout("'Hello World'\n");
+}
