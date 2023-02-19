@@ -1,4 +1,4 @@
-use std::{str::FromStr, fmt};
+use std::{fmt, str::FromStr};
 
 #[derive(Debug)]
 pub enum EscapeStyle {
@@ -20,6 +20,12 @@ impl FromStr for EscapeStyle {
     }
 }
 
+impl Default for EscapeStyle {
+    fn default() -> Self {
+        Self::None
+    }
+}
+
 #[derive(Debug)]
 pub enum QuoteStyle {
     None,
@@ -36,6 +42,12 @@ impl FromStr for QuoteStyle {
             "none" => Ok(Self::None),
             _ => Err(format!("Invalid quote style: {}", s)),
         }
+    }
+}
+
+impl Default for QuoteStyle {
+    fn default() -> Self {
+        Self::None
     }
 }
 
