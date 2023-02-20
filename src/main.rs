@@ -3,13 +3,13 @@ use std::{
     process,
 };
 
-use options::OutputOptions;
+use options::Config;
 
 mod enums;
 mod formatter;
 mod options;
 
-fn run(options: &OutputOptions) -> io::Result<()> {
+fn run(options: &Config) -> io::Result<()> {
     let stdout = io::stdout();
     let mut handle = stdout.lock();
     let formatter = formatter::Formatter::new(
@@ -25,11 +25,20 @@ fn run(options: &OutputOptions) -> io::Result<()> {
         handle.write_all(b"\n")?;
     }
 
+    if let Some(file_name) = options.output_file() {
+        use std::fs::File;
+        let mut file = File::create(file_name)?;
+        file.write_all(output.as_bytes())?;
+        if !options.no_newline() {
+            file.write_all(b"\n")?;
+        }
+    }
+
     Ok(())
 }
 
 fn main() {
-    if let Err(err) = run(&OutputOptions::new()) {
+    if let Err(err) = run(&Config::new()) {
         eprintln!("Error: {}", err);
         process::exit(1);
     }

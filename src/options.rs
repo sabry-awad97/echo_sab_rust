@@ -3,7 +3,13 @@ use structopt::StructOpt;
 use crate::enums::{EscapeStyle, QuoteStyle};
 
 #[derive(Debug, StructOpt)]
-#[structopt(name = "echo", about = "Print text to the console")]
+#[structopt(
+    name = "echo",
+    about = "Print text to the console",
+    author = "Sabry <dr.sabry@gmail.com>",
+    version = "0.1.0",
+    about = "Rust echo"
+)]
 struct EchoOptions {
     #[structopt(short = "n", long, help = "Suppress the trailing newline character")]
     no_newline: bool,
@@ -17,48 +23,57 @@ struct EchoOptions {
     #[structopt(short = "q", long, possible_values = &["none", "single", "double"], help = "Quote the output using the specified style")]
     quote_style: Option<QuoteStyle>,
 
-    #[structopt(help = "The text to print")]
+    #[structopt(short = "o", long, help = "The file to write the output to")]
+    output_file: Option<String>,
+
+    #[structopt(help = "The text to print", last = true)]
     text: String,
 }
 
-pub struct OutputOptions {
+pub struct Config {
     no_newline: bool,
     escape_style: EscapeStyle,
     no_whitespace: bool,
     quote_style: QuoteStyle,
     output: String,
+    output_file: Option<String>,
 }
 
-impl OutputOptions {
+impl Config {
     pub fn new() -> Self {
         let options = EchoOptions::from_args();
 
-        OutputOptions {
+        Config {
             no_newline: options.no_newline,
             escape_style: options.escape_style.unwrap_or_default(),
             no_whitespace: options.no_whitespace,
             quote_style: options.quote_style.unwrap_or_default(),
             output: options.text,
+            output_file: options.output_file,
         }
     }
 
-    pub fn no_newline(self: &OutputOptions) -> bool {
+    pub fn no_newline(self: &Config) -> bool {
         self.no_newline
     }
 
-    pub fn escape_style(self: &OutputOptions) -> EscapeStyle {
+    pub fn escape_style(self: &Config) -> EscapeStyle {
         self.escape_style
     }
 
-    pub fn no_whitespace(self: &OutputOptions) -> bool {
+    pub fn no_whitespace(self: &Config) -> bool {
         self.no_whitespace
     }
 
-    pub fn quote_style(self: &OutputOptions) -> QuoteStyle {
+    pub fn quote_style(self: &Config) -> QuoteStyle {
         self.quote_style
     }
 
-    pub fn output(self: &OutputOptions) -> &str {
+    pub fn output(self: &Config) -> &str {
         &self.output
+    }
+
+    pub fn output_file(self: &Config) -> &Option<String> {
+        &self.output_file
     }
 }
