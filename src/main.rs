@@ -22,10 +22,12 @@ fn run(options: &Config) -> io::Result<()> {
 
     let font_size = options.font_size();
     print!("\x1b[{}m", font_size);
-    
-    handle.write_all(output.as_bytes())?;
-    if !options.no_newline() {
-        handle.write_all(b"\n")?;
+
+    for _ in 0..options.repeat() {
+        handle.write_all(output.as_bytes())?;
+        if !options.no_newline() {
+            handle.write_all(b"\n")?;
+        }
     }
 
     if let Some(file_name) = options.output_file() {
