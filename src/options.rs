@@ -56,6 +56,7 @@ pub struct Config {
     output_file: Option<String>,
     font_size: u32,
     repeat: u32,
+    delay: u64,
 }
 
 impl Config {
@@ -71,6 +72,7 @@ impl Config {
             output_file: options.output_file,
             font_size: options.font_size.unwrap_or(12),
             repeat: options.repeat.unwrap_or(1),
+            delay: options.delay.unwrap_or(0),
         }
     }
 
@@ -104,5 +106,9 @@ impl Config {
 
     pub fn repeat(self: &Config) -> u32 {
         self.repeat
+    }
+
+    pub fn delay(self: &Config) -> u64 {
+        self.delay
     }
 }

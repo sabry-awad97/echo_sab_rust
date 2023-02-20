@@ -28,6 +28,8 @@ fn run(options: &Config) -> io::Result<()> {
         if !options.no_newline() {
             handle.write_all(b"\n")?;
         }
+
+        std::thread::sleep(std::time::Duration::from_millis(options.delay()));
     }
 
     if let Some(file_name) = options.output_file() {
