@@ -20,6 +20,9 @@ fn run(options: &Config) -> io::Result<()> {
     );
     let output = formatter.format_output();
 
+    let font_size = options.font_size();
+    print!("\x1b[{}m", font_size);
+    
     handle.write_all(output.as_bytes())?;
     if !options.no_newline() {
         handle.write_all(b"\n")?;
@@ -34,6 +37,7 @@ fn run(options: &Config) -> io::Result<()> {
         }
     }
 
+    print!("\x1b[0m"); // Reset the font size
     Ok(())
 }
 

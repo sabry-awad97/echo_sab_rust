@@ -26,6 +26,23 @@ struct EchoOptions {
     #[structopt(short = "o", long, help = "The file to write the output to")]
     output_file: Option<String>,
 
+    #[structopt(
+        short = "r",
+        long,
+        help = "Print the text multiple times, with an optional delay between each iteration"
+    )]
+    repeat: Option<u32>,
+
+    #[structopt(
+        short = "d",
+        long,
+        help = "The delay, in milliseconds, between each iteration of the text"
+    )]
+    delay: Option<u64>,
+
+    #[structopt(short = "f", long, help = "The font size of the text")]
+    font_size: Option<u32>,
+
     #[structopt(help = "The text to print", last = true)]
     text: String,
 }
@@ -37,6 +54,7 @@ pub struct Config {
     quote_style: QuoteStyle,
     output: String,
     output_file: Option<String>,
+    font_size: u32,
 }
 
 impl Config {
@@ -50,6 +68,7 @@ impl Config {
             quote_style: options.quote_style.unwrap_or_default(),
             output: options.text,
             output_file: options.output_file,
+            font_size: options.font_size.unwrap_or(12),
         }
     }
 
@@ -75,5 +94,9 @@ impl Config {
 
     pub fn output_file(self: &Config) -> &Option<String> {
         &self.output_file
+    }
+
+    pub fn font_size(self: &Config) -> &u32 {
+        &self.font_size
     }
 }
